@@ -28,8 +28,8 @@ class MessengerTarget extends \yii\log\Target
     public $dir = '@runtime/logs/messenger_target';
     
     public $viewBothInOneAs = false;
-    public $viewMessageAs = 'file';
-    public $viewContextAs = 'text';
+    public $viewMessageAs = 'text';
+    public $viewContextAs = 'file';
     
     public $enableArchiving = true;
     
