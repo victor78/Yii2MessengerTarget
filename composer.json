@@ -1,0 +1,45 @@
+{
+    "name": "victor78/yii2-messenger-target",
+    "description": "The log target for any messenger.",
+    "type": "yii2-extension",
+    "keywords": [
+        "Victor78",
+        "yii",
+        "yii2",
+        "yii 2",
+        "extension",
+        "target",
+        "log",
+        "messenger log",
+        "archive log",
+        "zip log",
+        "tar log",
+        "tar.gz log",
+        "telegramlog",
+        "log telegram"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Victor78"
+        }
+    ],    
+    "support": {
+        "issues": "https://github.com/Victor78/Yii2MessengerTarget/issues",
+        "wiki": "https://github.com/Victor78/Yii2MessengerTarget/wiki",
+        "source": "https://github.com/Victor78/Yii2MessengerTarget"
+    },
+
+    "require": {
+        "php": ">=7.0",
+        "yiisoft/yii2": "*",
+        "victor78/yii2-zipper": "0.0.2",
+        "yiisoft/yii2-httpclient": "~2.0.0"
+    },
+
+    "autoload": {
+        "psr-4": {
+            "Victor78\\MessengerTarget\\": "src/"
+        }
+    }
+}
