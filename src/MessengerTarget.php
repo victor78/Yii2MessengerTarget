@@ -45,6 +45,7 @@ class MessengerTarget extends \yii\log\Target
  
         parent::init();
         $this->initArchiver();
+        $this->initMessenger();
     }
     
     protected function initArchiver()
@@ -80,7 +81,7 @@ class MessengerTarget extends \yii\log\Target
      * 
      * @return object with MessagePusherInterface
      */
-    protected function getMessenger()
+    protected function initMessenger()
     {
 
         if ($this->messenger && Yii::$app->get($this->messenger)){
@@ -90,8 +91,13 @@ class MessengerTarget extends \yii\log\Target
         }     
         if (is_object($messenger) 
             &&  ($messenger instanceof MessagePusherInterface)){
-            return $messenger;
+            $this->messenger = $messenger;
         }   
+    }
+    
+    public function getMessenger()
+    {
+        return $this->messenger;
     }
     
     /**
@@ -172,8 +178,7 @@ class MessengerTarget extends \yii\log\Target
         $count = count($this->messages);
         if ($count > 0 && ($final || $this->exportInterval > 0 && $count >= $this->exportInterval)) {
             
-            $this->setLevelCategoryTimestamp($this->messages[0]);
-            $this->categoryMapper();            
+            $this->setLevelCategoryTimestamp($this->messages[0]);         
             
             $oldExportInterval = $this->exportInterval;
             $this->exportInterval = 0;
@@ -186,43 +191,50 @@ class MessengerTarget extends \yii\log\Target
         }
     }
     
+    public function sendLog($message, $context, $category, $timestamp)
+    {
+        
+        $messenger = $this->getMessenger();
+        if ($this->viewBothInOneAs){
+            $bothText = $message
+                .PHP_EOL.PHP_EOL.str_repeat('-', 32).PHP_EOL.PHP_EOL
+                .$context;
+            if ($this->viewBothInOneAs == 'file') {
+                $this->createAndPushFile($bothText, $category, $timestamp, 'FULL_LOG');
+            } elseif ($this->viewBothInOneAs == 'text') {
+                $messenger->sendText($bothText, $category); 
+            }
+        } else {            
+            
+            if ($this->viewMessageAs == 'text') {
+                $messenger->sendText($message, $category); 
+            } elseif ($this->viewMessageAs == 'file') {
+                $this->createAndPushFile($message, $category, $timestamp, 'LOG');
+            }
+            if ($this->viewContextAs == 'text') {
+                $messenger->sendText($context, $category);
+            } elseif ($this->viewContextAs == 'file') {
+                $this->createAndPushFile($context, $category, $timestamp, 'CONTEXT');
+            }
+        }
+    }
     
     public function export($context = '')
     {
         
-        $messenger = $this->getMessenger();
         foreach ($this->messages as $msg){
             list($text, $level, $category, $timestamp) = $msg;
             $message = $this->formatMessage($msg);
-            
+                         
             if ($category == 'application') {
                 $recepientsCategory = Logger::getLevelName($level);
             } else {
+                $category = $this->categoryMapper($category);  
                 $recepientsCategory = $category;
             }
+            
+            $this->sendLog($message, $context, $recepientsCategory, $timestamp);
 
-            if ($this->viewBothInOneAs){
-                $bothText = $message
-                    .PHP_EOL.PHP_EOL.str_repeat('-', 32).PHP_EOL.PHP_EOL
-                    .$context;
-                if ($this->viewBothInOneAs == 'file'){
-                    $this->createAndPushFile($bothText, $recepientsCategory, $timestamp, 'FULL_LOG');
-                } elseif ($this->viewBothInOneAs == 'text') {
-                    $messenger->sendText($bothText, $recepientsCategory); 
-                }
-            } else {            
-                
-                if ($this->viewMessageAs == 'text'){
-                    $messenger->sendText($message, $recepientsCategory); 
-                } elseif ($this->viewMessageAs == 'file'){
-                    $this->createAndPushFile($message, $recepientsCategory, $timestamp, 'LOG');
-                }
-                if ($this->viewContextAs == 'text') {
-                    $messenger->sendText($context, $recepientsCategory);
-                } else if ($this->viewContextAs == 'file'){
-                    $this->createAndPushFile($context, $recepientsCategory, $timestamp, 'CONTEXT');
-                }
-            }
         }
     }
     
@@ -294,17 +306,19 @@ class MessengerTarget extends \yii\log\Target
         }
     }
     
-    protected function categoryMapper()
+    protected function categoryMapper($category)
     {
         $matches = null;
-        if (preg_match('^(.*):[0-9]+^', $this->category, $matches)){
+        if (preg_match('^(.*):[0-9]+^', $category, $matches)){
             if (isset($matches[1])){
                 $exceptionClass = $matches[1];
                 if (is_subclass_of($exceptionClass, \ErrorException::class)
                     || is_subclass_of($exceptionClass, \Exception::class)){
-                    $this->category = 'error';
+                    return 'error';
                 }
             }
         }
+        
+        return $category;
     }
 }
