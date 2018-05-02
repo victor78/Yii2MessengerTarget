@@ -2,7 +2,7 @@
     "name": "victor78/yii2-messenger-target",
     "description": "The log target for any messenger.",
     "type": "yii2-extension",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "keywords": [
         "Victor78",
         "yii",
@@ -34,7 +34,7 @@
     "require": {
         "php": ">=7.0",
         "yiisoft/yii2": "*",
-        "victor78/yii2-zipper": "0.0.2",
+        "victor78/yii2-zipper": "~0.0.4",
         "yiisoft/yii2-httpclient": "~2.0.0"
     },
 
