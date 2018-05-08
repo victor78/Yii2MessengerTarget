@@ -309,16 +309,16 @@ class MessengerTarget extends \yii\log\Target
     protected function categoryMapper($category)
     {
         $matches = null;
-        if (preg_match('^(.*):[0-9]+^', $category, $matches)){
+
+        if (preg_match('^(.*):[0-9]+^', $category, $matches)) {
             if (isset($matches[1])){
-                $exceptionClass = $matches[1];
-                if (is_subclass_of($exceptionClass, \ErrorException::class)
-                    || is_subclass_of($exceptionClass, \Exception::class)){
-                    return 'error';
-                }
+                $category = $matches[1];
             }
         }
-        
+        if ($category == 'Exception' 
+            || is_subclass_of($category, \Exception::class)){
+            return 'error';
+        }
         return $category;
     }
 }
